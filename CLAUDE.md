@@ -11,13 +11,26 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 ### Backend Structure (`backend/`)
 
 **`config.py`**
-- Contains `COUNCIL_MODELS` (list of OpenRouter model identifiers)
+- Contains `COUNCIL_MODELS` (list of model identifiers from any supported provider)
 - Contains `CHAIRMAN_MODEL` (model that synthesizes final answer)
-- Uses environment variable `OPENROUTER_API_KEY` from `.env`
+- API keys loaded from environment variables:
+  - `OPENROUTER_API_KEY` - For OpenRouter models (openai/, anthropic/, google/, x-ai/, etc.)
+  - `DEEPSEEK_API_KEY` - For DeepSeek models (deepseek/)
+  - `ZHIPU_API_KEY` - For ZhipuAI/GLM models (zhipu/, glm/)
+  - `MOONSHOT_API_KEY` - For Moonshot/Kimi models (moonshot/, kimi/)
 - Backend runs on **port 8001** (NOT 8000 - user had another app on 8000)
 
-**`openrouter.py`**
-- `query_model()`: Single async model query
+**`providers/`** - Multi-Provider Abstraction Layer
+- `base.py`: Abstract `LLMProvider` class and `ProviderRegistry` for managing providers
+- `openrouter.py`: OpenRouter provider (supports openai/, anthropic/, google/, x-ai/, etc.)
+- `deepseek.py`: DeepSeek provider (deepseek/)
+- `zhipu.py`: ZhipuAI provider for GLM models (zhipu/, glm/)
+- `moonshot.py`: Moonshot provider for Kimi models (moonshot/, kimi/)
+- Provider is auto-selected based on model identifier prefix
+- Supports graceful fallback to OpenRouter for unknown prefixes
+
+**`openrouter.py`** (unified interface)
+- `query_model()`: Single async model query via appropriate provider
 - `query_models_parallel()`: Parallel queries using `asyncio.gather()`
 - Returns dict with 'content' and optional 'reasoning_details'
 - Graceful degradation: returns None on failure, continues with successful responses
