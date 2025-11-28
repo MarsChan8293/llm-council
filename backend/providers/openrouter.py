@@ -51,6 +51,8 @@ class OpenRouterProvider(LLMProvider):
             "Content-Type": "application/json",
         }
 
+        # OpenRouter expects the full model identifier (e.g., "openai/gpt-4")
+        # unlike other providers that only need the model name
         payload = {
             "model": model,
             "messages": messages,

@@ -17,6 +17,14 @@ class DeepSeekProvider(LLMProvider):
     def provider_name(self) -> str:
         return "deepseek"
 
+    def supports_model(self, model_identifier: str) -> bool:
+        """Check if this is a DeepSeek model."""
+        if "/" not in model_identifier:
+            return False
+
+        prefix = model_identifier.split("/")[0].lower()
+        return prefix == "deepseek"
+
     async def query(
         self,
         model: str,
@@ -49,6 +57,7 @@ class DeepSeekProvider(LLMProvider):
                 data = response.json()
                 message = data['choices'][0]['message']
 
+                # DeepSeek Reasoner models return reasoning in 'reasoning_content'
                 return {
                     'content': message.get('content'),
                     'reasoning_details': message.get('reasoning_content')
