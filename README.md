@@ -32,30 +32,53 @@ npm install
 cd ..
 ```
 
-### 2. Configure API Key
+### 2. Configure API Keys
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root with API keys for the providers you want to use:
 
 ```bash
+# OpenRouter (required for openai/, anthropic/, google/, x-ai/, meta-llama/ models)
 OPENROUTER_API_KEY=sk-or-v1-...
+
+# DeepSeek (optional, for deepseek/ models)
+DEEPSEEK_API_KEY=sk-...
+
+# ZhipuAI / GLM (optional, for zhipu/, glm/ models)
+ZHIPU_API_KEY=...
+
+# Moonshot / Kimi (optional, for moonshot/, kimi/ models)
+MOONSHOT_API_KEY=sk-...
 ```
 
-Get your API key at [openrouter.ai](https://openrouter.ai/). Make sure to purchase the credits you need, or sign up for automatic top up.
+Get your API keys from:
+- OpenRouter: [openrouter.ai](https://openrouter.ai/)
+- DeepSeek: [platform.deepseek.com](https://platform.deepseek.com/)
+- ZhipuAI (GLM): [open.bigmodel.cn](https://open.bigmodel.cn/)
+- Moonshot (Kimi): [platform.moonshot.cn](https://platform.moonshot.cn/)
 
 ### 3. Configure Models (Optional)
 
 Edit `backend/config.py` to customize the council:
 
 ```python
+# You can mix models from different providers
 COUNCIL_MODELS = [
-    "openai/gpt-5.1",
-    "google/gemini-3-pro-preview",
-    "anthropic/claude-sonnet-4.5",
-    "x-ai/grok-4",
+    "openai/gpt-5.1",              # Via OpenRouter
+    "google/gemini-3-pro-preview", # Via OpenRouter
+    "anthropic/claude-sonnet-4.5", # Via OpenRouter
+    "deepseek/deepseek-chat",      # Via DeepSeek API
+    "zhipu/glm-4-plus",            # Via ZhipuAI API
+    "moonshot/moonshot-v1-8k",     # Via Moonshot API
 ]
 
 CHAIRMAN_MODEL = "google/gemini-3-pro-preview"
 ```
+
+**Supported model prefixes:**
+- **OpenRouter**: `openai/`, `anthropic/`, `google/`, `x-ai/`, `meta-llama/`, `mistralai/`, `cohere/`, `qwen/`
+- **DeepSeek**: `deepseek/` (e.g., `deepseek/deepseek-chat`, `deepseek/deepseek-reasoner`)
+- **ZhipuAI (GLM)**: `zhipu/`, `glm/` (e.g., `zhipu/glm-4-plus`, `glm/glm-4-flash`)
+- **Moonshot (Kimi)**: `moonshot/`, `kimi/` (e.g., `moonshot/moonshot-v1-8k`, `kimi/moonshot-v1-128k`)
 
 ## Running the Application
 
@@ -81,7 +104,8 @@ Then open http://localhost:5173 in your browser.
 
 ## Tech Stack
 
-- **Backend:** FastAPI (Python 3.10+), async httpx, OpenRouter API
+- **Backend:** FastAPI (Python 3.10+), async httpx, Multi-provider LLM API support
 - **Frontend:** React + Vite, react-markdown for rendering
 - **Storage:** JSON files in `data/conversations/`
 - **Package Management:** uv for Python, npm for JavaScript
+- **Supported Providers:** OpenRouter, DeepSeek, ZhipuAI (GLM), Moonshot (Kimi)

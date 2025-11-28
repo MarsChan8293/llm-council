@@ -1,8 +1,11 @@
-"""OpenRouter API client for making LLM requests."""
+"""LLM API client for making requests to multiple providers.
 
-import httpx
+This module provides a unified interface for querying LLMs across different providers.
+It supports OpenRouter, DeepSeek, ZhipuAI (GLM), Moonshot (Kimi), and other providers.
+"""
+
 from typing import List, Dict, Any, Optional
-from .config import OPENROUTER_API_KEY, OPENROUTER_API_URL
+from .providers.base import get_registry
 
 
 async def query_model(
@@ -11,46 +14,25 @@ async def query_model(
     timeout: float = 120.0
 ) -> Optional[Dict[str, Any]]:
     """
-    Query a single model via OpenRouter API.
+    Query a single model via the appropriate provider.
+
+    The provider is automatically selected based on the model identifier prefix.
+    Supported providers:
+        - OpenRouter: openai/, anthropic/, google/, x-ai/, meta-llama/, etc.
+        - DeepSeek: deepseek/
+        - ZhipuAI (GLM): zhipu/, glm/
+        - Moonshot (Kimi): moonshot/, kimi/
 
     Args:
-        model: OpenRouter model identifier (e.g., "openai/gpt-4o")
+        model: Model identifier (e.g., "openai/gpt-4o", "deepseek/deepseek-chat")
         messages: List of message dicts with 'role' and 'content'
         timeout: Request timeout in seconds
 
     Returns:
         Response dict with 'content' and optional 'reasoning_details', or None if failed
     """
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "model": model,
-        "messages": messages,
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(
-                OPENROUTER_API_URL,
-                headers=headers,
-                json=payload
-            )
-            response.raise_for_status()
-
-            data = response.json()
-            message = data['choices'][0]['message']
-
-            return {
-                'content': message.get('content'),
-                'reasoning_details': message.get('reasoning_details')
-            }
-
-    except Exception as e:
-        print(f"Error querying model {model}: {e}")
-        return None
+    registry = get_registry()
+    return await registry.query_model(model, messages, timeout)
 
 
 async def query_models_parallel(
@@ -58,22 +40,14 @@ async def query_models_parallel(
     messages: List[Dict[str, str]]
 ) -> Dict[str, Optional[Dict[str, Any]]]:
     """
-    Query multiple models in parallel.
+    Query multiple models in parallel using appropriate providers.
 
     Args:
-        models: List of OpenRouter model identifiers
+        models: List of model identifiers
         messages: List of message dicts to send to each model
 
     Returns:
         Dict mapping model identifier to response dict (or None if failed)
     """
-    import asyncio
-
-    # Create tasks for all models
-    tasks = [query_model(model, messages) for model in models]
-
-    # Wait for all to complete
-    responses = await asyncio.gather(*tasks)
-
-    # Map models to their responses
-    return {model: response for model, response in zip(models, responses)}
+    registry = get_registry()
+    return await registry.query_models_parallel(models, messages)
