@@ -5,22 +5,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# OpenRouter API key
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# DeepSeek and Moonshot (Kimi) API keys
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY")
 
-# Council members - list of OpenRouter model identifiers
+# Council members - using two direct provider models
 COUNCIL_MODELS = [
-    "openai/gpt-5.1",
-    "google/gemini-3-pro-preview",
-    "anthropic/claude-sonnet-4.5",
-    "x-ai/grok-4",
+    "deepseek-chat",
+    "moonshot-v1-8k",
 ]
 
 # Chairman model - synthesizes final response
-CHAIRMAN_MODEL = "google/gemini-3-pro-preview"
+CHAIRMAN_MODEL = "deepseek-chat"
 
-# OpenRouter API endpoint
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+# Provider API endpoints
+DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
+MOONSHOT_API_URL = "https://api.moonshot.cn/v1/chat/completions"
 
 # Data directory for conversation storage
 DATA_DIR = "data/conversations"

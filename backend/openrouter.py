@@ -1,8 +1,13 @@
-"""OpenRouter API client for making LLM requests."""
+"""Direct provider API client for DeepSeek and Moonshot (Kimi)."""
 
 import httpx
 from typing import List, Dict, Any, Optional
-from .config import OPENROUTER_API_KEY, OPENROUTER_API_URL
+from .config import (
+    DEEPSEEK_API_KEY,
+    MOONSHOT_API_KEY,
+    DEEPSEEK_API_URL,
+    MOONSHOT_API_URL,
+)
 
 
 async def query_model(
@@ -21,8 +26,19 @@ async def query_model(
     Returns:
         Response dict with 'content' and optional 'reasoning_details', or None if failed
     """
+    # Select provider based on model prefix
+    if model.startswith("deepseek"):
+        api_key = DEEPSEEK_API_KEY
+        api_url = DEEPSEEK_API_URL
+    elif model.startswith("moonshot"):
+        api_key = MOONSHOT_API_KEY
+        api_url = MOONSHOT_API_URL
+    else:
+        print(f"Unsupported model provider for '{model}'")
+        return None
+
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 
@@ -34,7 +50,7 @@ async def query_model(
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                OPENROUTER_API_URL,
+                api_url,
                 headers=headers,
                 json=payload
             )
